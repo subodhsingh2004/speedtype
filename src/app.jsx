@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
 import Timer from './components/Timer'
-import Typing from './Typing'
-import TypingTwo from './TypingTwo'
 
 function App() {
 
