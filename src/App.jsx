@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react'
-import Timer from './components/Timer'
 
 function App() {
 
@@ -12,14 +11,19 @@ function App() {
     const [inputDisabled, setInputDisabled] = useState(false)
     const [wpm, setWpm] = useState(null)
     const [accuracy, setAccuracy] = useState(null)
-    const [time, setTime] = useState(initialTime)
+    const [timeLeft, setTimeLeft] = useState(initialTime)
+
+    const min = String(Math.floor(timeLeft / 60)).padStart(2, "0")
+    const sec = String(Math.floor(timeLeft % 60)).padStart(2, "0")
+
 
     const inputRef = useRef(null)
     // const defaultTotalWords = defaultParagraph.split(" ").filter(word => word.length > 0).length
 
     useEffect(() => {
         inputRef.current.focus()
-    }, [])
+    }, [inputDisabled])
+
 
     const handleInputChange = (e) => {
         setUserTypedText(e.target.value)
@@ -30,8 +34,11 @@ function App() {
     }
 
     const handleReset = () => {
-        setIsTyping(false)
+        setTimeLeft(initialTime)
+        setInputDisabled(false)
         setUserTypedText("")
+        setWpm(null)
+        setAccuracy(null)
     }
 
     const calculateAccuracy = () => {
@@ -73,11 +80,25 @@ function App() {
 
         const wordsTyped = userTypedText.split(" ").filter(word => word.length > 0).length
 
-        const speed = (wordsTyped / timeElasped) * 60;
+        const speed = Math.floor((wordsTyped / timeElasped) * 60);
 
         setWpm(speed)
         calculateAccuracy()
     }
+
+
+    useEffect(() => {
+        if (timeLeft == 0) calculateWPM()
+
+        if (timeLeft > 0 && isTyping) {
+            const timer = setTimeout(() => {
+                setTimeLeft(prev => prev - 1)
+            }, 1000);
+
+            return () => clearTimeout(timer)
+        }
+
+    }, [timeLeft, isTyping])
 
     return (
         <div className='h-screen w-full bg-[#001] text-white flex flex-col items-center py-5 space-y-10'>
@@ -92,7 +113,13 @@ function App() {
 
                 <div className='flex w-full justify-between'>
                     <h1 className='text-white font-[poppins]'>Type Here</h1>
-                    <Timer time={time} typingStatus={isTyping} speedCalculator={calculateWPM} />
+                    <div>
+                        {
+                            timeLeft > 0 ?
+                                <h1 className='font-jetbrains text-[#64f135] text-[20px]'> {min}:{sec} </h1> :
+                                <h1 className='font-jetbrains text-[#64f135] text-[20px]'> Time's up!</h1>
+                        }
+                    </div>
                 </div>
 
                 <textarea
@@ -117,6 +144,7 @@ function App() {
                 <h1 hidden={!wpm} className='text-3xl font-jetbrains text-white font-bold'>{wpm} WPM| {accuracy}%</h1>
 
                 <button onClick={handleReset} className='font-jetbrains text-black font-medium py-1 px-2 bg-[#64f135]'>Reset</button>
+
             </div>
         </div>
     )
