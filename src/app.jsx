@@ -34,10 +34,6 @@ function App() {
         setUserTypedText("")
     }
 
-    const handleClick = () => {
-        console.log(Math.floor((Date.now() - startTime) / 1000))
-    }
-
     const calculateAccuracy = () => {
         const defaultWords = defaultParagraph.split(' ')
         const userWords = userTypedText.split(' ')
